@@ -10,9 +10,16 @@
     "html_handling": "none",
     "not_found_handling": "404-page"
   },
+  "workers_dev": true,
   "browser": {
     "binding": "BROWSER"
   },
+  "routes": [
+    {
+      "pattern": "birthday.glassgallery.my.id/*",
+      "zone_name": "glassgallery.my.id"
+    }
+  ],
   "observability": {
     "enabled": true
   }
