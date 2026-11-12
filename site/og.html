@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<title>OG — sebuah perayaan kecil</title>
+<style>
+  @font-face{font-family:"Fraunces";src:url("assets/fonts/Fraunces-normal-latin.woff2") format("woff2");font-weight:200 700;font-style:normal}
+  @font-face{font-family:"Fraunces";src:url("assets/fonts/Fraunces-italic-latin.woff2") format("woff2");font-weight:200 700;font-style:italic}
+  @font-face{font-family:"Inter";src:url("assets/fonts/Inter-normal-latin.woff2") format("woff2");font-weight:300 600;font-style:normal}
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1200px;height:630px;overflow:hidden}
+  body{
+    background:#F1EBE0;
+    color:#17140F;
+    padding:56px 64px 46px;
+    display:flex;
+    flex-direction:column;
+    font-family:"Inter",sans-serif;
+    position:relative;
+  }
+  body::after{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  }
+  .micro{font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:rgba(23,20,15,.55)}
+  .top{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid rgba(23,20,15,.14)}
+  .top b{color:#A0652F;font-weight:600}
+  .mid{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative}
+  h1{font-family:"Fraunces",serif;font-weight:300;font-size:172px;line-height:.8;letter-spacing:-.04em}
+  h1 em{font-style:italic;font-size:.82em;display:block;text-align:right;letter-spacing:-.035em;color:#2A241B}
+  .bot{display:flex;justify-content:space-between;align-items:flex-end;padding-top:18px;border-top:1px solid rgba(23,20,15,.14)}
+  .seal{position:absolute;right:176px;top:38px;width:96px;color:rgba(160,101,47,.75);font-size:8px;letter-spacing:.28em;text-transform:uppercase;text-align:center;line-height:1.6}
+  .seal i{display:block;font-family:"Fraunces",serif;font-style:italic;font-size:26px;letter-spacing:0;color:#A0652F;margin-top:2px}
+</style>
+</head>
+<body>
+  <div class="top">
+    <span class="micro"><b>✳</b>&nbsp; Sebuah perayaan kecil</span>
+    <span class="micro">Sebuah surat untuk hari yang besar</span>
+  </div>
+  <div class="mid">
+    <h1>Selamat <em>ulang tahun</em></h1>
+    <div class="seal">MMXXVI<i>✦</i></div>
+  </div>
+  <div class="bot">
+    <span class="micro">Panjang umur, dan bahagia</span>
+    <span class="micro">birthday.glassgallery.my.id</span>
+  </div>
+</body>
+</html>
