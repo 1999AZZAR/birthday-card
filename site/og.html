@@ -32,6 +32,10 @@
   .bot{display:flex;justify-content:space-between;align-items:flex-end;padding-top:18px;border-top:1px solid rgba(23,20,15,.14)}
   .seal{position:absolute;right:176px;top:38px;width:96px;color:rgba(160,101,47,.75);font-size:8px;letter-spacing:.28em;text-transform:uppercase;text-align:center;line-height:1.6}
   .seal i{display:block;font-family:"Fraunces",serif;font-style:italic;font-size:26px;letter-spacing:0;color:#A0652F;margin-top:2px}
+  .who{position:absolute;left:64px;bottom:18px;display:flex;align-items:baseline;gap:14px}
+  .who .name{font-family:"Fraunces",serif;font-style:italic;font-weight:300;font-size:38px;line-height:1;letter-spacing:-.02em;color:#17140F}
+  .who .from,.who .date{color:rgba(23,20,15,.5)}
+  .who .from:empty,.who .date:empty{display:none}
 </style>
 </head>
 <body>
@@ -42,10 +46,34 @@
   <div class="mid">
     <h1>Selamat <em>ulang tahun</em></h1>
     <div class="seal">MMXXVI<i>✦</i></div>
+    <div class="who">
+      <span class="micro">untuk</span>
+      <span class="name">{{TO}}</span>
+      <span class="micro from">{{FROM}}</span>
+      <span class="micro date">{{DATE}}</span>
+    </div>
   </div>
   <div class="bot">
     <span class="micro">Panjang umur, dan bahagia</span>
     <span class="micro">birthday.glassgallery.my.id</span>
   </div>
+<script>
+  (function () {
+    var params = new URLSearchParams(location.search);
+    var to = params.get("to");
+    var from = params.get("from");
+    var date = params.get("date");
+    if (to) document.querySelector(".name").textContent = to;
+    if (from) document.querySelector(".from").textContent = from;
+    if (date) {
+      var d = new Date(date + "T00:00:00Z");
+      if (!isNaN(d)) {
+        document.querySelector(".date").textContent = d.toLocaleDateString("id-ID", {
+          day: "numeric", month: "long", year: "numeric", timeZone: "UTC"
+        });
+      }
+    }
+  })();
+</script>
 </body>
 </html>

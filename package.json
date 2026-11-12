@@ -1,0 +1,13 @@
+{
+  "name": "birthday-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Editorial birthday card — static site with a Cloudflare Worker for personalized social previews",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs && wrangler dev",
+    "deploy": "node scripts/build.mjs && wrangler deploy",
+    "docker:build": "docker build -t birthday-site:latest ."
+  }
+}
