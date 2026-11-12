@@ -1,124 +1,108 @@
-# Birthday Site
+# Birthday Card
 
-An editorial, letterpress-inspired birthday card. Static HTML/CSS/JS, no framework, no bundler.
+A birthday greeting you send as a link. The card is one page of static HTML; the name, the sign-off, and the date come from the URL.
 
-Live: <https://birthday.glassgallery.my.id>
+**Live: <https://birthday.glassgallery.my.id>**
 
-## Stack
+![The cover of the card](docs/preview.webp)
 
-- Plain HTML, CSS, and vanilla JS
-- GSAP + ScrollTrigger (pinned "five truths" on desktop), Lenis smooth scroll — self-hosted
-- Fraunces (display) and Inter (labels) — self-hosted woff2
-- Cloudflare Worker with **Static Assets** (serves the site) + **Browser Run** (renders the social preview)
-- Optional fallback: `nginx` container served through the shared Caddy edge
+## Send it to someone
 
-## Structure
-
-```
-site/
-  index.html              all content (letter, truths) lives in markup
-  og.html                 template for the social preview card ({{TO}} / {{FROM}} / {{DATE}})
-  _headers                cache rules for Workers Static Assets
-  assets/css/styles.css   design, responsive, print, reduced-motion, no-JS fallbacks
-  assets/js/app.js        motion, cursor, candle, clock, personalization
-  assets/js/content.js    default recipient / sender / date / city / timezone
-  assets/fonts/           Fraunces + Inter woff2, gf.css
-  assets/js/vendor/       gsap, ScrollTrigger, lenis
-  assets/img/og.png       static fallback preview (1200x630)
-src/index.js              the Worker: static hosting, per-recipient meta, /og.png renderer
-scripts/build.mjs         copies site/ -> build/ and fingerprints CSS/JS with a content hash
-wrangler.jsonc            Worker config (assets, browser binding, zone route)
-Dockerfile, nginx.conf    optional self-hosted variant
-```
-
-## Personalize
-
-Query parameters override the defaults without rebuilding:
+Add the person's details to the link. Nothing to install, nothing to rebuild.
 
 ```
 https://birthday.glassgallery.my.id/?to=Azzar&from=Mema&date=1996-11-12
 ```
 
-| Param  | Effect                                  |
-| ------ | --------------------------------------- |
-| `to`   | Recipient name (default `Kamu`)         |
-| `from` | Sender, shown in the sign-off (default: none) |
-| `date` | Birthday as `YYYY-MM-DD`, drives the header date, sign-off date, and the preview card |
+| Parameter | What changes |
+| --- | --- |
+| `to` | The name on the cover, the letter, and the closing line |
+| `from` | Who the letter is from, in the sign-off |
+| `date` | The birthday as `YYYY-MM-DD`; sets the date on the cover and the sign-off |
 
-The Worker rewrites `<head>` per request, so link unfurlers (WhatsApp, X, Facebook) show the
-right name and a matching preview image without executing JavaScript. The visible page is
-personalized client-side by `assets/js/app.js`.
+Everything else stays the same on every link: the letter, the five truths, the candle you light by holding it.
 
-To change the permanent default, edit `site/assets/js/content.js`:
+The preview image is rendered per recipient, so the card in a chat preview carries the same name:
+
+![The generated preview card](docs/og-card.webp)
+
+Copy the link, paste it into WhatsApp or Instagram, and it reads like you wrote it for that person.
+
+## What is in the card
+
+- A cover set in Fraunces, with a rotating wax seal and a live clock in the recipient's timezone
+- A letter on paper texture, with a wax seal that drops in when you reach it
+- Five truths, pinned one after another on a horizontal scroll
+- A candle you light by pressing and holding it
+- A closing line, then a footer with the date
+
+The whole page is one HTML file with no framework and no bundler. GSAP handles the motion, Lenis smooths the scroll, and both are served from the same origin as the site.
+
+## Run your own copy
+
+The card reads its content from the HTML, so you can change the words without touching the code.
+
+```bash
+git clone https://github.com/1999AZZAR/birthday-card.git
+cd birthday-card
+python3 -m http.server 8099 --directory site
+```
+
+Open <http://127.0.0.1:8099/>. Add `?to=Someone` to see the personalisation.
+
+### Change the letter
+
+The letter and the five truths are plain markup in `site/index.html` — the paragraphs are inside `.letter__sheet`, the truths are inside `.truths__track`. Edit them as you would any paragraph of text.
+
+### Change the defaults
+
+`site/assets/js/content.js` holds the values used when the URL has no parameters:
 
 ```js
 window.BIRTHDAY = {
   to: "Kamu",
   from: "",
-  date: "",        // empty = today
+  date: "",        // empty means today
   city: "Jakarta",
   timeZone: "Asia/Jakarta",
 };
 ```
 
-The letter body and the five truths are static HTML in `index.html` — edit them there so they stay
-crawlable and readable without JS.
+### Change the colours and type
 
-## Deploy (Cloudflare, primary)
+`site/assets/css/styles.css` keeps the palette in custom properties at the top of the file. The display face is Fraunces and the labels are Inter, both self-hosted in `site/assets/fonts/` so the card renders the same without a network.
 
-```bash
-cd ~/projects/birthday-site
-npm run deploy      # node scripts/build.mjs && wrangler deploy
-```
+## Deploy it
 
-Credentials come from `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit is enough for the Worker
-itself; the zone route additionally needs Zone > Workers Routes > Edit, which the vault's
-Cloudflare global API key covers).
-
-Zone route: `birthday.glassgallery.my.id/*` -> Worker `birthday-site`.
-
-`scripts/build.mjs` fingerprints every CSS/JS file with a content hash and rewrites the URLs in
-`index.html`, so the immutable one-year cache in `_headers` is always safe: a changed file always
-gets a new URL.
-
-### Social preview
-
-`/og.png?to=Azzar&from=Mema&date=1996-11-12` renders `site/og.html` through Browser Run at
-1200x630 and returns a PNG. Results are cached per recipient for 7 days; if the browser budget is
-exhausted the endpoint falls back to the static `assets/img/og.png`.
-
-Free plan budget: Workers 100k requests/day, Browser Run 10 minutes of browser time per day and
-one screenshot per 10 seconds — plenty for a personal card as long as previews are cached.
-
-## Deploy (self-hosted, alternative)
+The site runs on Cloudflare Workers with static assets, and the preview image is drawn by Browser Run. The free plan is enough for a card like this: Workers allow 100,000 requests a day, and Browser Run allows ten minutes of browser time a day.
 
 ```bash
-cd ~/projects/birthday-site
-docker build -t birthday-site:latest .
-
-cd ~/projects/misa-stack
-nix run .#svcctl -- undeploy birthday --yes
-nix run .#svcctl -- deploy birthday birthday-site:latest 80 --domain birthday.glassgallery.my.id
+npm run deploy
 ```
 
-`svcctl` writes the Caddy route at `~/projects/shared-caddy/conf.d/birthday.caddy` and restarts
-Caddy; the Cloudflare Tunnel ingress entry points the hostname at `http://localhost:80`.
+That runs `scripts/build.mjs` and then `wrangler deploy`. The build step copies `site/` into `build/` and appends a content hash to every CSS and JavaScript URL, so the one-year immutable cache never serves a stale file.
 
-## Local preview
+You need a Cloudflare API token with **Account → Workers Scripts → Edit**, plus **Zone → Workers Routes → Edit** if you attach a custom domain. Set it as `CLOUDFLARE_API_TOKEN`.
+
+To serve it from a container instead, `Dockerfile` builds the same `build/` output into nginx:
 
 ```bash
-cd site && python3 -m http.server 8099     # static site
-npm run dev                                # full worker (assets + meta + og.png)
+docker build -t birthday-card:latest .
 ```
 
-## Accessibility and fallbacks
+## How the preview image works
 
-- Without JS: the letter and all five truths render in normal flow, fully readable.
-- `prefers-reduced-motion`: animations are neutralized, the pin is released, truths stack vertically.
-- The candle can be lit with keyboard (`Enter`/`Space`) or pointer.
-- Print stylesheet outputs only the letter.
+`/og.png?to=Azzar&from=Mema` reads `site/og.html`, swaps the placeholders for the recipient's details, and hands the page to Browser Run at 1200×630. The Worker returns the PNG and caches it for that recipient for seven days.
 
-## Regenerating the static fallback preview
+Two limits come with the free plan. Browser Run allows one screenshot every ten seconds, so a second new recipient inside that window waits for the next slot instead of failing. And when the daily browser budget runs out, the endpoint falls back to the static `site/assets/img/og.png`, which is the same design without the name.
 
-Open `site/og.html` in a browser at 1200x630 and screenshot it to `site/assets/img/og.png`,
-then rebuild.
+## Accessibility
+
+- The letter and the truths are in the HTML, so they read without JavaScript.
+- `prefers-reduced-motion` turns off the animation and releases the pinned section.
+- The candle takes keyboard focus; hold `Enter` or `Space` to light it.
+- Printing the page gives you the letter and nothing else.
+
+## License
+
+MIT. Use it, change the words, send it to whoever you like.

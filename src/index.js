@@ -127,7 +127,7 @@ async function renderOgImage(request, env, ctx, person) {
     .replace(/\{\{DATE\}\}/g, escapeHtml(formatDate(person.date)));
 
   try {
-    const shot = await env.BROWSER.quickAction("screenshot", {
+    const shot = await shoot(env, {
       html,
       viewport: { width: 1200, height: 630 },
       screenshotOptions: { type: "png" },
@@ -154,8 +154,22 @@ async function renderOgImage(request, env, ctx, person) {
   }
 }
 
-async function staticOgFallback(env, origin) {
-  try {
+/**
+ * The free plan allows one screenshot every 10 seconds, so a second request
+ * inside that window comes back as 429. Wait once and try again.
+ */
+async function shoot(env, payload, attempt = 0) {
+  const shot = await env.BROWSER.quickAction("screenshot", payload);
+  if (shot.status === 429 && attempt === 0) {
+    const header = Number(shot.headers.get("retry-after") ?? 3);
+    const waitSeconds = Math.min(Number.isFinite(header) && header > 0 ? header : 3, 11);
+    await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
+    return shoot(env, payload, attempt + 1);
+  }
+  return shot;
+}
+
+async function staticOgFallback(env, origin) {  try {
     const response = await env.ASSETS.fetch(new Request(new URL("/assets/img/og.png", origin)));
     if (response.ok) {
       return new Response(response.body, {
